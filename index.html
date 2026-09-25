@@ -1,0 +1,1825 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#05060a" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="PAC-RAMPAGE" />
+    <meta
+      name="description"
+      content="PAC-RAMPAGE: MAZE BREAKER — smash the maze, eat power, trigger rampage."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2300e5ff'/%3E%3Cpolygon points='16,16 30,8 30,24' fill='%2305060a'/%3E%3C/svg%3E"
+    />
+    <title>PAC-RAMPAGE: MAZE BREAKER</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #05060a;
+        height: 100%;
+        height: 100dvh;
+        touch-action: none;
+        overscroll-behavior: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+        color-scheme: dark;
+      }
+      #c {
+        display: block;
+        background: #05060a;
+        width: 100%;
+        height: 100%;
+      }
+      #hud {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: calc(10px + env(safe-area-inset-top, 0px))
+          calc(14px + env(safe-area-inset-right, 0px)) 10px
+          calc(14px + env(safe-area-inset-left, 0px));
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        pointer-events: none;
+        text-shadow: 0 0 6px #000;
+        z-index: 5;
+        gap: 8px;
+      }
+      #hud .box {
+        font-size: clamp(11px, 3.2vw, 14px);
+        line-height: 1.4;
+      }
+      #rightBox {
+        padding-top: 34px;
+      }
+      #combo {
+        font-size: clamp(16px, 5vw, 22px);
+        font-weight: 800;
+        color: #0ff;
+        text-shadow: 0 0 10px #0ff;
+      }
+      #meterWrap {
+        position: fixed;
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(60vw, 320px);
+        height: 14px;
+        background: #111;
+        border: 2px solid #333;
+        border-radius: 8px;
+        overflow: hidden;
+        z-index: 5;
+        pointer-events: none;
+      }
+      body.touch #meterWrap {
+        top: calc(52px + env(safe-area-inset-top, 0px));
+        bottom: auto;
+        width: min(50vw, 240px);
+      }
+      #meterFill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #0ff, #f0f, #ff0);
+        transition: width 0.1s;
+      }
+      #pauseBtn {
+        position: fixed;
+        top: calc(10px + env(safe-area-inset-top, 0px));
+        right: calc(10px + env(safe-area-inset-right, 0px));
+        z-index: 6;
+        background: #111a;
+        color: #0ff;
+        border: 1px solid #0ff;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 16px;
+        pointer-events: auto;
+        min-width: 44px;
+        min-height: 44px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        display: none;
+      }
+      #menu,
+      #title {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        font-family: Arial, sans-serif;
+        z-index: 10;
+        gap: 14px;
+        padding: max(16px, env(safe-area-inset-top, 0px))
+          max(16px, env(safe-area-inset-right, 0px))
+          max(16px, env(safe-area-inset-bottom, 0px))
+          max(16px, env(safe-area-inset-left, 0px));
+        box-sizing: border-box;
+        overflow: auto;
+      }
+      #title h1 {
+        font-size: clamp(22px, 6vw, 54px);
+        color: #0ff;
+        text-shadow: 0 0 20px #0ff;
+        letter-spacing: 2px;
+        text-align: center;
+        margin: 0;
+      }
+      button.gbtn {
+        background: #111;
+        color: #0ff;
+        border: 2px solid #0ff;
+        border-radius: 8px;
+        padding: 12px 28px;
+        font-size: 16px;
+        cursor: pointer;
+        min-width: min(200px, 80vw);
+        min-height: 44px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+      button.gbtn:active {
+        background: #0ff;
+        color: #000;
+      }
+      #joy {
+        position: fixed;
+        left: calc(16px + env(safe-area-inset-left, 0px));
+        bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid rgba(0, 255, 255, 0.4);
+        z-index: 5;
+        touch-action: none;
+        display: none;
+      }
+      #joyStick {
+        position: absolute;
+        left: 35px;
+        top: 35px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(0, 255, 255, 0.5);
+        pointer-events: none;
+      }
+      #dashBtn {
+        position: fixed;
+        right: calc(20px + env(safe-area-inset-right, 0px));
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: rgba(255, 0, 255, 0.25);
+        border: 2px solid #f0f;
+        color: #fff;
+        font-size: 12px;
+        z-index: 5;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      @media (max-height: 500px) {
+        body.touch #meterWrap {
+          top: calc(44px + env(safe-area-inset-top, 0px));
+          width: min(40vw, 200px);
+        }
+        #joy {
+          width: 88px;
+          height: 88px;
+        }
+        #joyStick {
+          left: 28px;
+          top: 28px;
+          width: 32px;
+          height: 32px;
+        }
+        #dashBtn {
+          width: 60px;
+          height: 60px;
+        }
+      }
+      .hidden {
+        display: none !important;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #meterFill {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <div id="hud">
+      <div class="box">
+        SCORE: <span id="score">0</span><br />MASS: <span id="mass">1.0</span>
+      </div>
+      <div id="combo">x1</div>
+      <div class="box" id="rightBox" style="text-align: right">
+        LIVES: <span id="lives">3</span><br />LVL: <span id="lvl">1</span>
+      </div>
+    </div>
+    <div id="meterWrap"><div id="meterFill"></div></div>
+    <button id="pauseBtn">⏸</button>
+    <div id="joy"><div id="joyStick"></div></div>
+    <div id="dashBtn">DASH</div>
+
+    <div id="title">
+      <h1>
+        PAC-RAMPAGE<br /><span style="font-size: 0.5em; color: #f0f"
+          >MAZE BREAKER</span
+        >
+      </h1>
+      <p
+        id="titleBlurb"
+        style="max-width: 320px; text-align: center; color: #aaa"
+      >
+        Smash the maze. Eat power. Trigger RAMPAGE. Survive the ghosts.
+      </p>
+      <p style="color: #ffee00; font-size: 15px; text-shadow: 0 0 8px #ffee00">
+        BEST: <span id="hiScoreTitle">0</span>
+      </p>
+      <button class="gbtn" id="startBtn">START GAME</button>
+      <p style="color: #666; font-size: 12px">
+        WASD/Arrows or drag • SPACE/Tap = Dash • P = Pause
+      </p>
+    </div>
+
+    <div id="menu" class="hidden">
+      <h2 style="color: #0ff">PAUSED</h2>
+      <p style="color: #ffee00; font-size: 14px; text-shadow: 0 0 6px #ffee00">
+        BEST: <span id="hiScoreMenu">0</span>
+      </p>
+      <button class="gbtn" id="resumeBtn">RESUME</button>
+      <button class="gbtn" id="restartBtn">RESTART</button>
+      <button class="gbtn" id="soundBtn">SOUND: ON</button>
+      <button class="gbtn" id="titleBtn">TITLE</button>
+    </div>
+
+    <script>
+      "use strict";
+      /* ============ CANVAS / RESIZE ============ */
+      const canvas = document.getElementById("c"),
+        ctx =
+          canvas.getContext("2d", { alpha: false }) || canvas.getContext("2d");
+      let W,
+        H,
+        DPR,
+        mazeW = 0,
+        mazeH = 0,
+        state = "title";
+      const TITLE_BLURB =
+        "Smash the maze. Eat power. Trigger RAMPAGE. Survive the ghosts.";
+      const reduceMotion =
+        window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function viewportSize() {
+        const vv = window.visualViewport;
+        if (vv && vv.width > 0 && vv.height > 0)
+          return { w: Math.round(vv.width), h: Math.round(vv.height) };
+        return { w: window.innerWidth, h: window.innerHeight };
+      }
+      function resize() {
+        DPR = Math.min(window.devicePixelRatio || 1, 2);
+        const vs = viewportSize();
+        W = vs.w;
+        H = vs.h;
+        canvas.width = W * DPR;
+        canvas.height = H * DPR;
+        canvas.style.width = W + "px";
+        canvas.style.height = H + "px";
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        if (state === "playing" || state === "paused") syncMazeToViewport();
+      }
+      function syncMazeToViewport() {
+        if (!grid || !COLS || !ROWS) return;
+        const newCols = Math.max(16, Math.floor(W / TILE));
+        const newRows = Math.max(12, Math.floor((H - 40) / TILE));
+        if (newCols === COLS && newRows === ROWS && mazeW === W && mazeH === H)
+          return;
+        const oldCols = COLS,
+          oldRows = ROWS;
+        const nx = newCols / oldCols,
+          ny = newRows / oldRows;
+        COLS = newCols;
+        ROWS = newRows;
+        mazeW = W;
+        mazeH = H;
+        const next = [];
+        for (let y = 0; y < ROWS; y++) {
+          const row = [];
+          for (let x = 0; x < COLS; x++) {
+            if (x === 0 || y === 0 || x === COLS - 1 || y === ROWS - 1) {
+              row.push(-1);
+              continue;
+            }
+            const ox = Math.min(oldCols - 2, Math.max(1, Math.floor(x / nx)));
+            const oy = Math.min(oldRows - 2, Math.max(1, Math.floor(y / ny)));
+            const src = grid[oy] && grid[oy][ox];
+            row.push(
+              src && typeof src === "object"
+                ? { hp: src.hp, max: src.max, type: src.type }
+                : src === -1
+                  ? null
+                  : src,
+            );
+          }
+          next.push(row);
+        }
+        grid = next;
+        player.x = Math.max(
+          TILE + player.r,
+          Math.min(COLS * TILE - TILE - player.r, player.x * nx),
+        );
+        player.y = Math.max(
+          TILE + player.r,
+          Math.min(ROWS * TILE - TILE - player.r, player.y * ny),
+        );
+        for (const g of ghosts) {
+          g.x = Math.max(
+            TILE + g.r,
+            Math.min(COLS * TILE - TILE - g.r, g.x * nx),
+          );
+          g.y = Math.max(
+            TILE + g.r,
+            Math.min(ROWS * TILE - TILE - g.r, g.y * ny),
+          );
+        }
+        for (const p of pellets) {
+          p.x *= nx;
+          p.y *= ny;
+        }
+        for (const q of regrowQueue) {
+          q.gx = Math.min(COLS - 2, Math.max(1, Math.round(q.gx * nx)));
+          q.gy = Math.min(ROWS - 2, Math.max(1, Math.round(q.gy * ny)));
+        }
+        if (spawnPoint) {
+          spawnPoint.cx = Math.min(
+            COLS - 2,
+            Math.max(1, Math.round(spawnPoint.cx * nx)),
+          );
+          spawnPoint.cy = Math.min(
+            ROWS - 2,
+            Math.max(1, Math.round(spawnPoint.cy * ny)),
+          );
+        }
+        cam.x = player.x;
+        cam.y = player.y;
+        const tiles = nearbyTiles(player.x, player.y, player.r + 2);
+        for (const { gx, gy } of tiles) {
+          if (gx <= 0 || gy <= 0 || gx >= COLS - 1 || gy >= ROWS - 1) continue;
+          if (grid[gy][gx] && grid[gy][gx] !== -1) grid[gy][gx] = null;
+        }
+      }
+
+      /* ============ AUDIO (procedural, Web Audio) ============ */
+      let actx = null,
+        soundOn = true;
+      function ensureAudio() {
+        try {
+          if (!actx) {
+            actx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          if (actx.state === "suspended") actx.resume();
+        } catch (e) {
+          soundOn = false;
+        }
+      }
+      function beep(freq, dur, type = "sine", gain = 0.15, slideTo = null) {
+        if (!soundOn || !actx) return;
+        const t = actx.currentTime;
+        const o = actx.createOscillator(),
+          g = actx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(freq, t);
+        if (slideTo)
+          o.frequency.exponentialRampToValueAtTime(
+            Math.max(slideTo, 1),
+            t + dur,
+          );
+        g.gain.setValueAtTime(gain, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        o.connect(g).connect(actx.destination);
+        o.start(t);
+        o.stop(t + dur + 0.02);
+      }
+      function sfxHit(force) {
+        beep(
+          120 + Math.min(force, 400),
+          0.12,
+          "square",
+          0.12 + Math.min(force / 2000, 0.15),
+          40,
+        );
+      }
+      function sfxDestroy() {
+        beep(90, 0.18, "sawtooth", 0.2, 20);
+      }
+      function sfxPellet() {
+        beep(700, 0.06, "sine", 0.08, 900);
+      }
+      function sfxPower() {
+        beep(420, 0.16, "triangle", 0.14, 980);
+      }
+      function sfxRampage() {
+        beep(60, 0.6, "sawtooth", 0.25, 20);
+        beep(180, 0.45, "square", 0.12, 40);
+      }
+      function sfxDash() {
+        beep(400, 0.08, "triangle", 0.1, 150);
+      }
+      function sfxDeath() {
+        beep(200, 0.5, "sawtooth", 0.2, 30);
+      }
+      function sfxNearMiss() {
+        beep(880, 0.07, "sine", 0.09, 1400);
+      }
+      function sfxMine() {
+        beep(90, 0.22, "square", 0.16, 40);
+      }
+      function sfxLevel() {
+        beep(520, 0.12, "triangle", 0.12, 780);
+      }
+      function sfxStart() {
+        beep(330, 0.12, "square", 0.1, 520);
+      }
+      function sfxPause() {
+        beep(240, 0.08, "sine", 0.08, 160);
+      }
+      function sfxResume() {
+        beep(360, 0.08, "sine", 0.08, 480);
+      }
+      function sfxGameOver() {
+        beep(180, 0.7, "sawtooth", 0.18, 40);
+      }
+      function sfxClick() {
+        beep(640, 0.04, "square", 0.06);
+      }
+      let rumble = null;
+      function setRumble(on) {
+        if (!actx) return;
+        if (on && soundOn && !rumble && !reduceMotion) {
+          const o = actx.createOscillator(),
+            g = actx.createGain();
+          o.type = "sine";
+          o.frequency.value = 40;
+          g.gain.value = 0.05;
+          o.connect(g).connect(actx.destination);
+          o.start();
+          rumble = { o, g };
+        } else if ((!on || !soundOn) && rumble) {
+          try {
+            rumble.o.stop();
+          } catch (e) {}
+          rumble = null;
+        }
+      }
+
+      /* ============ MAZE (tile grid, destructible) ============ */
+      const TILE = 32;
+      let COLS, ROWS, grid; // grid[y][x] = {hp,max,type} or null(empty) or -1(indestructible border)
+      const MATS = {
+        soft: { hp: 1, color: "#2a3550" },
+        hard: { hp: 3, color: "#3a2f55" },
+        concrete: { hp: 6, color: "#553030" },
+      };
+
+      function genMaze(level) {
+        regrowQueue.length = 0;
+        COLS = Math.max(16, Math.floor(W / TILE));
+        ROWS = Math.max(12, Math.floor((H - 40) / TILE));
+        mazeW = W;
+        mazeH = H;
+        grid = [];
+        for (let y = 0; y < ROWS; y++) {
+          const row = [];
+          for (let x = 0; x < COLS; x++) {
+            if (x === 0 || y === 0 || x === COLS - 1 || y === ROWS - 1) {
+              row.push(-1);
+              continue;
+            }
+            const r = Math.random();
+            if (x % 2 === 0 && y % 2 === 0 && Math.random() < 0.55) {
+              const t = r < 0.15 ? "concrete" : r < 0.5 ? "hard" : "soft";
+              row.push({ hp: MATS[t].hp, max: MATS[t].hp, type: t });
+            } else if (Math.random() < 0.12 + level * 0.01) {
+              const t = Math.random() < 0.3 ? "hard" : "soft";
+              row.push({ hp: MATS[t].hp, max: MATS[t].hp, type: t });
+            } else row.push(null);
+          }
+          grid.push(row);
+        }
+        // clear center spawn area
+        const cx = Math.floor(COLS / 2),
+          cy = Math.floor(ROWS / 2);
+        for (let dy = -1; dy <= 1; dy++)
+          for (let dx = -1; dx <= 1; dx++) {
+            const gx = cx + dx,
+              gy = cy + dy;
+            if (grid[gy] && grid[gy][gx] !== -1) grid[gy][gx] = null;
+          }
+        return { cx, cy };
+      }
+
+      /* ============ OBJECT POOLS ============ */
+      function makePool(n, factory) {
+        const pool = [];
+        for (let i = 0; i < n; i++) pool.push(factory());
+        return {
+          items: pool,
+          active: [],
+          spawn(init) {
+            let o = pool.pop();
+            if (!o) o = factory();
+            init(o);
+            o.alive = true;
+            this.active.push(o);
+            return o;
+          },
+          update(dt, fn) {
+            for (let i = this.active.length - 1; i >= 0; i--) {
+              const o = this.active[i];
+              fn(o, dt);
+              if (!o.alive) {
+                this.active.splice(i, 1);
+                pool.push(o);
+              }
+            }
+          },
+          draw(fn) {
+            for (const o of this.active) fn(o);
+          },
+          clear() {
+            while (this.active.length) {
+              const o = this.active.pop();
+              o.alive = false;
+              pool.push(o);
+            }
+          },
+        };
+      }
+      const debrisPool = makePool(500, () => ({
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        life: 0,
+        maxLife: 1,
+        size: 2,
+        color: "#fff",
+        alive: false,
+      }));
+      const particlePool = makePool(300, () => ({
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        life: 0,
+        maxLife: 1,
+        size: 2,
+        color: "#0ff",
+        alive: false,
+      }));
+
+      function spawnDebris(x, y, color, count, speedMul) {
+        for (let i = 0; i < count; i++) {
+          const a = Math.random() * Math.PI * 2,
+            sp = (40 + Math.random() * 160) * speedMul;
+          debrisPool.spawn((o) => {
+            o.x = x;
+            o.y = y;
+            o.vx = Math.cos(a) * sp;
+            o.vy = Math.sin(a) * sp;
+            o.life = 0;
+            o.maxLife = 0.4 + Math.random() * 0.5;
+            o.size = 2 + Math.random() * 4;
+            o.color = color;
+            o.r = o.size / 2;
+          });
+        }
+      }
+      function spawnBurst(x, y, color, count) {
+        for (let i = 0; i < count; i++) {
+          const a = Math.random() * Math.PI * 2,
+            sp = 60 + Math.random() * 220;
+          particlePool.spawn((o) => {
+            o.x = x;
+            o.y = y;
+            o.vx = Math.cos(a) * sp;
+            o.vy = Math.sin(a) * sp;
+            o.life = 0;
+            o.maxLife = 0.3 + Math.random() * 0.4;
+            o.size = 2 + Math.random() * 3;
+            o.color = color;
+          });
+        }
+      }
+
+      /* ============ PLAYER (physics body) ============ */
+      const TILE_PASSABLE_MAX_DIAM = TILE * 0.8; // hard ceiling: player must always fit a 1-tile corridor
+      function computeBaseR(mass) {
+        // tiny, capped growth — mass still scales impact force (KE) via player.mass directly,
+        // it does NOT need a big visual/collision radius to feel "powerful"
+        return Math.min(
+          10 + Math.max(0, mass - 1) * 1.5,
+          TILE_PASSABLE_MAX_DIAM / 2,
+        );
+      }
+      const player = {
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        r: 10,
+        mass: 1,
+        baseR: 10,
+        accel: 900,
+        friction: 4.2,
+        maxSpeed: 340,
+        dashCD: 0,
+        dashTime: 0,
+        rampage: 0,
+        rampageMax: 100,
+        rampageActive: false,
+        rampageTime: 0,
+        score: 0,
+        combo: 1,
+        comboTimer: 0,
+        lives: 3,
+        invuln: 0,
+        scale: 1,
+        angle: 0,
+        mouthPhase: 0,
+      };
+      function resetPlayer(spawn) {
+        player.x = spawn.cx * TILE + TILE / 2;
+        player.y = spawn.cy * TILE + TILE / 2;
+        player.vx = 0;
+        player.vy = 0;
+        player.mass = 1;
+        player.baseR = computeBaseR(1);
+        player.r = player.baseR;
+        player.rampage = 0;
+        player.rampageActive = false;
+        player.rampageTime = 0;
+        player.invuln = 1.5;
+      }
+
+      /* ============ GHOSTS ============ */
+      let ghosts = [];
+      const GHOST_COLORS = {
+        blinky: "#ff3355",
+        pinky: "#ff7fd8",
+        inky: "#37e0ff",
+        clyde: "#ffb347",
+      };
+      function spawnGhosts(spawn, level) {
+        ghosts = [];
+        const types = ["blinky", "pinky", "inky", "clyde"];
+        const n = 4; // all 4 ghosts (Blinky/Pinky/Inky/Clyde) present from level 1, matching README
+        for (let i = 0; i < n; i++) {
+          const t = types[i];
+          let gx, gy;
+          let tries = 0;
+          do {
+            gx = 1 + Math.floor(Math.random() * (COLS - 2));
+            gy = 1 + Math.floor(Math.random() * (ROWS - 2));
+            tries++;
+          } while (
+            tries < 80 &&
+            ((grid[gy] && grid[gy][gx]) ||
+              (Math.abs(gx - spawn.cx) < 4 && Math.abs(gy - spawn.cy) < 4))
+          );
+          ghosts.push({
+            type: t,
+            x: gx * TILE + TILE / 2,
+            y: gy * TILE + TILE / 2,
+            vx: 0,
+            vy: 0,
+            r: 13,
+            mass: 0.9,
+            color: GHOST_COLORS[t],
+            speed: 70 + level * 4,
+            alive: true,
+            scared: false,
+            tetherX: gx * TILE,
+            tetherY: gy * TILE,
+            mineCD: 2 + Math.random() * 2,
+            stunned: 0,
+            alertTimer: 0,
+            nearMissCD: 0,
+          });
+        }
+      }
+
+      /* ============ PELLETS ============ */
+      let pellets = [];
+      function spawnPellets(spawn) {
+        pellets = [];
+        for (let y = 1; y < ROWS - 1; y++)
+          for (let x = 1; x < COLS - 1; x++) {
+            if (
+              grid[y][x] === null &&
+              Math.random() < 0.22 &&
+              !(Math.abs(x - spawn.cx) < 2 && Math.abs(y - spawn.cy) < 2)
+            ) {
+              pellets.push({
+                x: x * TILE + TILE / 2,
+                y: y * TILE + TILE / 2,
+                r: 4,
+                power: Math.random() < 0.12,
+              });
+            }
+          }
+        if (!pellets.length) {
+          const x = Math.min(COLS - 2, Math.max(1, spawn.cx + 2)),
+            y = Math.min(ROWS - 2, Math.max(1, spawn.cy));
+          if (grid[y]) grid[y][x] = null;
+          pellets.push({
+            x: x * TILE + TILE / 2,
+            y: y * TILE + TILE / 2,
+            r: 4,
+            power: false,
+          });
+        }
+      }
+
+      /* ============ INPUT ============ */
+      const keys = {};
+      window.addEventListener("keydown", (e) => {
+        if (e.repeat) return;
+        keys[e.code] = true;
+        if (e.code === "Space") {
+          e.preventDefault();
+          if (state === "playing") doDash();
+        }
+        if (e.code === "KeyP" || e.code === "Escape") {
+          e.preventDefault();
+          togglePause();
+        }
+      });
+      window.addEventListener("keyup", (e) => (keys[e.code] = false));
+
+      let inputVec = { x: 0, y: 0 };
+      const mq = (q) => !!(window.matchMedia && window.matchMedia(q).matches);
+      const isTouch =
+        ("ontouchstart" in window || (navigator.maxTouchPoints || 0) > 0) &&
+        (mq("(pointer: coarse)") || mq("(hover: none)"));
+      if (isTouch) document.body.classList.add("touch");
+      const joy = document.getElementById("joy"),
+        joyStick = document.getElementById("joyStick"),
+        dashBtn = document.getElementById("dashBtn");
+      let joyId = null;
+      if (isTouch) {
+        let joyCX = 0,
+          joyCY = 0,
+          joyRadius = 55;
+        function setStick(dx, dy) {
+          const max = joyRadius * 0.82;
+          const d = Math.hypot(dx, dy);
+          if (d > max) {
+            dx = (dx / d) * max;
+            dy = (dy / d) * max;
+          }
+          const half = joyStick.offsetWidth ? joyStick.offsetWidth / 2 : 20;
+          joyStick.style.left = joyRadius - half + dx + "px";
+          joyStick.style.top = joyRadius - half + dy + "px";
+          inputVec.x = dx / max;
+          inputVec.y = dy / max;
+        }
+        function joyStart(e) {
+          const t = e.changedTouches ? e.changedTouches[0] : e;
+          if (!t) return;
+          if (joyId !== null && t.identifier !== joyId) return;
+          joyId = t.identifier;
+          const r = joy.getBoundingClientRect();
+          joyCX = r.left + r.width / 2;
+          joyCY = r.top + r.height / 2;
+          joyRadius = r.width / 2;
+          setStick(t.clientX - joyCX, t.clientY - joyCY);
+        }
+        function joyMove(e) {
+          if (joyId === null) return;
+          const touches = e.touches || e.changedTouches;
+          let t = null;
+          for (let i = 0; i < touches.length; i++)
+            if (touches[i].identifier === joyId) {
+              t = touches[i];
+              break;
+            }
+          if (!t) return;
+          setStick(t.clientX - joyCX, t.clientY - joyCY);
+        }
+        function joyEnd(e) {
+          const touches = e.changedTouches || [];
+          for (let i = 0; i < touches.length; i++)
+            if (touches[i].identifier === joyId) {
+              joyId = null;
+              inputVec.x = 0;
+              inputVec.y = 0;
+              const half = joyStick.offsetWidth ? joyStick.offsetWidth / 2 : 20;
+              joyStick.style.left = joyRadius - half + "px";
+              joyStick.style.top = joyRadius - half + "px";
+              break;
+            }
+        }
+        joy.addEventListener(
+          "touchstart",
+          (e) => {
+            e.preventDefault();
+            joyStart(e);
+          },
+          { passive: false },
+        );
+        joy.addEventListener(
+          "touchmove",
+          (e) => {
+            e.preventDefault();
+            joyMove(e);
+          },
+          { passive: false },
+        );
+        joy.addEventListener("touchend", joyEnd);
+        joy.addEventListener("touchcancel", joyEnd);
+        dashBtn.addEventListener(
+          "touchstart",
+          (e) => {
+            e.preventDefault();
+            doDash();
+          },
+          { passive: false },
+        );
+      }
+
+      function getInput() {
+        let ix = 0,
+          iy = 0;
+        if (keys["KeyW"] || keys["ArrowUp"]) iy -= 1;
+        if (keys["KeyS"] || keys["ArrowDown"]) iy += 1;
+        if (keys["KeyA"] || keys["ArrowLeft"]) ix -= 1;
+        if (keys["KeyD"] || keys["ArrowRight"]) ix += 1;
+        if (isTouch) {
+          ix += inputVec.x;
+          iy += inputVec.y;
+        }
+        const d = Math.hypot(ix, iy);
+        if (d > 1) {
+          ix /= d;
+          iy /= d;
+        }
+        return { x: ix, y: iy };
+      }
+      function doDash() {
+        if (state !== "playing" || player.dashCD > 0) return;
+        ensureAudio();
+        const inp = getInput();
+        let dx = inp.x,
+          dy = inp.y;
+        if (dx === 0 && dy === 0) {
+          const m = Math.hypot(player.vx, player.vy) || 1;
+          dx = player.vx / m;
+          dy = player.vy / m;
+        }
+        const dashForce = 620 * (1 + player.mass * 0.1);
+        player.vx += dx * dashForce;
+        player.vy += dy * dashForce;
+        player.dashCD = 0.9;
+        player.dashTime = 0.15;
+        sfxDash();
+        shake(6, 0.2);
+      }
+
+      /* ============ CAMERA / FX ============ */
+      let cam = { x: 0, y: 0, zoom: 1 };
+      let shakeMag = 0,
+        shakeTime = 0;
+      function shake(mag, time) {
+        if (reduceMotion) return;
+        shakeMag = Math.max(shakeMag, mag);
+        shakeTime = Math.max(shakeTime, time);
+      }
+      let flashAlpha = 0;
+
+      /* ============ GAME STATE ============ */
+      resize();
+      window.addEventListener("resize", resize);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", resize);
+        window.visualViewport.addEventListener("scroll", () => {
+          window.scrollTo(0, 0);
+          resize();
+        });
+      }
+      let level = 1,
+        spawnPoint = null,
+        rafId = null,
+        lastT = 0;
+      const scoreEl = document.getElementById("score"),
+        massEl = document.getElementById("mass"),
+        comboEl = document.getElementById("combo"),
+        livesEl = document.getElementById("lives"),
+        lvlEl = document.getElementById("lvl"),
+        meterFill = document.getElementById("meterFill");
+
+      function resetTouchStick() {
+        if (!isTouch) return;
+        joyId = null;
+        inputVec.x = 0;
+        inputVec.y = 0;
+        joyStick.style.left = "";
+        joyStick.style.top = "";
+      }
+      function startGame() {
+        ensureAudio();
+        sfxStart();
+        document.getElementById("titleBlurb").textContent = TITLE_BLURB;
+        debrisPool.clear();
+        particlePool.clear();
+        setRumble(false);
+        level = 1;
+        player.lives = 3;
+        player.score = 0;
+        player.combo = 1;
+        player.comboTimer = 0;
+        player.dashCD = 0;
+        player.dashTime = 0;
+        player.scale = 1;
+        scoreEl.textContent = 0;
+        livesEl.textContent = 3;
+        lvlEl.textContent = 1;
+        comboEl.textContent = "x1";
+        massEl.textContent = "1.0";
+        spawnPoint = genMaze(level);
+        spawnGhosts(spawnPoint, level);
+        spawnPellets(spawnPoint);
+        resetPlayer(spawnPoint);
+        resetTouchStick();
+        cam.x = player.x;
+        cam.y = player.y;
+        cam.zoom = 1;
+        document.getElementById("title").classList.add("hidden");
+        document.getElementById("menu").classList.add("hidden");
+        document.getElementById("pauseBtn").style.display = "block";
+        if (isTouch) {
+          joy.style.display = "block";
+          dashBtn.style.display = "flex";
+        }
+        state = "playing";
+        lastT = performance.now();
+        if (!rafId) rafId = requestAnimationFrame(loop);
+      }
+      function nextLevel() {
+        sfxLevel();
+        level++;
+        debrisPool.clear();
+        particlePool.clear();
+        spawnPoint = genMaze(level);
+        spawnGhosts(spawnPoint, level);
+        spawnPellets(spawnPoint);
+        const keepMass = player.mass;
+        resetPlayer(spawnPoint);
+        player.mass = keepMass;
+        player.baseR = computeBaseR(keepMass);
+        player.r = player.baseR;
+        cam.x = player.x;
+        cam.y = player.y;
+        lvlEl.textContent = level;
+      }
+      function togglePause() {
+        if (state === "playing") {
+          state = "paused";
+          document.getElementById("menu").classList.remove("hidden");
+          setRumble(false);
+          ensureAudio();
+          sfxPause();
+          resetTouchStick();
+          if (isTouch) {
+            joy.style.display = "none";
+            dashBtn.style.display = "none";
+          }
+        } else if (state === "paused") {
+          state = "playing";
+          document.getElementById("menu").classList.add("hidden");
+          lastT = performance.now();
+          ensureAudio();
+          sfxResume();
+          resetTouchStick();
+          if (isTouch) {
+            joy.style.display = "block";
+            dashBtn.style.display = "flex";
+          }
+        }
+      }
+      document.getElementById("startBtn").onclick = () => {
+        ensureAudio();
+        startGame();
+      };
+      document.getElementById("resumeBtn").onclick = togglePause;
+      document.getElementById("restartBtn").onclick = () => {
+        ensureAudio();
+        sfxClick();
+        document.getElementById("menu").classList.add("hidden");
+        startGame();
+      };
+      document.getElementById("titleBtn").onclick = () => {
+        ensureAudio();
+        sfxClick();
+        state = "title";
+        document.getElementById("menu").classList.add("hidden");
+        document.getElementById("title").classList.remove("hidden");
+        setRumble(false);
+        document.getElementById("pauseBtn").style.display = "none";
+        document.getElementById("titleBlurb").textContent = TITLE_BLURB;
+        resetTouchStick();
+        if (isTouch) {
+          joy.style.display = "none";
+          dashBtn.style.display = "none";
+        }
+      };
+      document.getElementById("soundBtn").onclick = (e) => {
+        soundOn = !soundOn;
+        e.target.textContent = "SOUND: " + (soundOn ? "ON" : "OFF");
+        if (!soundOn) setRumble(false);
+        else {
+          ensureAudio();
+          sfxClick();
+        }
+      };
+      document.getElementById("pauseBtn").onclick = () => {
+        if (state === "playing" || state === "paused") togglePause();
+      };
+      window.addEventListener("blur", () => {
+        for (const k in keys) keys[k] = false;
+        resetTouchStick();
+        if (state === "playing") togglePause();
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden && state === "playing") togglePause();
+        else if (!document.hidden && actx && actx.state === "suspended")
+          actx.resume();
+      });
+      // iOS Safari fires 'resize' before the new layout has settled after a rotation — re-measure
+      // a beat later so the maze/camera regenerate against the correct final viewport size.
+      window.addEventListener("pagehide", () => {
+        if (state === "playing") togglePause();
+        setRumble(false);
+      });
+      window.addEventListener("pageshow", () => {
+        if (actx && actx.state === "suspended") actx.resume();
+        resize();
+      });
+      window.addEventListener("orientationchange", () => {
+        setTimeout(resize, 150);
+        setTimeout(resize, 400);
+      });
+      document.addEventListener("gesturestart", (e) => e.preventDefault());
+      document.addEventListener("gesturechange", (e) => e.preventDefault());
+      document.addEventListener("dblclick", (e) => e.preventDefault());
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+      document.addEventListener(
+        "touchmove",
+        (e) => {
+          if (state === "playing" && !e.target.closest("#title,#menu"))
+            e.preventDefault();
+        },
+        { passive: false },
+      );
+
+      /* ============ COLLISION HELPERS ============ */
+      function tileAt(px, py) {
+        const gx = Math.floor(px / TILE),
+          gy = Math.floor(py / TILE);
+        if (gy < 0 || gy >= ROWS || gx < 0 || gx >= COLS)
+          return { gx, gy, cell: -1 };
+        return { gx, gy, cell: grid[gy][gx] };
+      }
+      // circle vs AABB collision + reflection
+      function resolveCircleTile(body, gx, gy) {
+        const tx = gx * TILE,
+          ty = gy * TILE;
+        const cx = Math.max(tx, Math.min(body.x, tx + TILE));
+        const cy = Math.max(ty, Math.min(body.y, ty + TILE));
+        let dx = body.x - cx,
+          dy = body.y - cy;
+        const distSq = dx * dx + dy * dy;
+        if (distSq < body.r * body.r) {
+          let nx, ny, dist;
+          if (distSq < 1e-8) {
+            const left = body.x - tx,
+              right = tx + TILE - body.x,
+              top = body.y - ty,
+              bot = ty + TILE - body.y;
+            const m = Math.min(left, right, top, bot);
+            if (m === left) {
+              nx = -1;
+              ny = 0;
+              body.x = tx - body.r;
+            } else if (m === right) {
+              nx = 1;
+              ny = 0;
+              body.x = tx + TILE + body.r;
+            } else if (m === top) {
+              nx = 0;
+              ny = -1;
+              body.y = ty - body.r;
+            } else {
+              nx = 0;
+              ny = 1;
+              body.y = ty + TILE + body.r;
+            }
+            dist = body.r;
+          } else {
+            dist = Math.sqrt(distSq);
+            nx = dx / dist;
+            ny = dy / dist;
+            const overlap = body.r - dist;
+            body.x += nx * overlap;
+            body.y += ny * overlap;
+          }
+          const vDotN = body.vx * nx + body.vy * ny;
+          if (vDotN < 0) {
+            body.vx -= 2 * vDotN * nx;
+            body.vy -= 2 * vDotN * ny;
+            body.vx *= 0.78;
+            body.vy *= 0.78;
+          }
+          return { nx, ny };
+        }
+        return null;
+      }
+      function nearbyTiles(x, y, radius) {
+        const out = [];
+        const gx0 = Math.floor((x - radius) / TILE),
+          gx1 = Math.floor((x + radius) / TILE);
+        const gy0 = Math.floor((y - radius) / TILE),
+          gy1 = Math.floor((y + radius) / TILE);
+        for (let gy = gy0; gy <= gy1; gy++)
+          for (let gx = gx0; gx <= gx1; gx++) {
+            if (gy < 0 || gy >= ROWS || gx < 0 || gx >= COLS) continue;
+            out.push({ gx, gy });
+          }
+        return out;
+      }
+
+      let regrowQueue = []; // {gx,gy,type,t} scheduled to reform, so bashed tunnels aren't permanently safe
+      function destroyTile(gx, gy, momentumForce) {
+        const t = grid[gy][gx];
+        if (!t || t === -1) return;
+        const cx = gx * TILE + TILE / 2,
+          cy = gy * TILE + TILE / 2;
+        spawnDebris(cx, cy, MATS[t.type].color, 10, momentumForce || 1);
+        grid[gy][gx] = null;
+        sfxDestroy();
+        // Small flat reward only — destruction is a traversal/panic tool, not a farm. Real score comes
+        // from pellets, near-misses and rampage takedowns (skill-based), not from bashing bricks.
+        addScore(4);
+        // schedule regrowth so the maze heals and a bashed path can't be used as a permanent safe lane
+        regrowQueue.push({
+          gx,
+          gy,
+          type: t.type,
+          timer: 10 + Math.random() * 6,
+        });
+        // ALERT nearby ghosts instead of repelling them — breaking a wall reveals your position and
+        // startles enemies toward you. This makes destruction a risk you take for mobility, not a free escape.
+        for (const g of ghosts) {
+          const dx = player.x - g.x,
+            dy = player.y - g.y,
+            d = Math.hypot(dx, dy);
+          if (d < TILE * 4.5) {
+            g.alertTimer = Math.max(g.alertTimer || 0, 1.6);
+          }
+        }
+      }
+
+      let highScore = 0;
+      try {
+        highScore =
+          parseInt(localStorage.getItem("pacRampageHighScore") || "0", 10) || 0;
+      } catch (e) {}
+      function updateHiScoreUI() {
+        const t = document.getElementById("hiScoreTitle"),
+          m = document.getElementById("hiScoreMenu");
+        if (t) t.textContent = highScore;
+        if (m) m.textContent = highScore;
+      }
+      updateHiScoreUI();
+      function addScore(n) {
+        player.score += Math.round(n * player.combo);
+        scoreEl.textContent = player.score;
+        if (player.score > highScore) {
+          highScore = player.score;
+          try {
+            localStorage.setItem("pacRampageHighScore", highScore);
+          } catch (e) {}
+          updateHiScoreUI();
+        }
+      }
+      function bumpCombo() {
+        player.combo = Math.min(player.combo + 0.15, 12);
+        player.comboTimer = 2.2;
+        comboEl.textContent = "x" + player.combo.toFixed(1);
+      }
+
+      /* ============ MAIN UPDATE ============ */
+      function update(dt) {
+        dt = Math.min(dt, 0.033);
+        // player input -> force
+        const inp = getInput();
+        const massDrag = 1 / (0.7 + player.mass * 0.25);
+        player.vx += inp.x * player.accel * massDrag * dt;
+        player.vy += inp.y * player.accel * massDrag * dt;
+        // friction / damping
+        const fr = Math.exp(-player.friction * dt);
+        player.vx *= fr;
+        player.vy *= fr;
+        const spd = Math.hypot(player.vx, player.vy);
+        // dash grants a genuine burst ABOVE the normal cap for its short window — that burst is what
+        // makes hard/concrete walls breakable and is the payoff for using dash offensively.
+        const dashBoost = player.dashTime > 0 ? 1.7 : 1;
+        const maxSp =
+          player.maxSpeed * (player.rampageActive ? 1.6 : 1) * dashBoost;
+        if (spd > maxSp) {
+          player.vx = (player.vx / spd) * maxSp;
+          player.vy = (player.vy / spd) * maxSp;
+        }
+
+        player.x += player.vx * dt;
+        player.y += player.vy * dt;
+        // facing: rotate toward movement direction (input takes priority so it turns before moving)
+        const faceDX = inp.x !== 0 || inp.y !== 0 ? inp.x : player.vx;
+        const faceDY = inp.x !== 0 || inp.y !== 0 ? inp.y : player.vy;
+        if (Math.hypot(faceDX, faceDY) > 0.05) {
+          const targetAngle = Math.atan2(faceDY, faceDX);
+          let da = targetAngle - player.angle;
+          while (da > Math.PI) da -= Math.PI * 2;
+          while (da < -Math.PI) da += Math.PI * 2;
+          player.angle += da * Math.min(1, dt * 12);
+        }
+        player.mouthPhase += dt * (6 + spd * 0.02);
+        player.dashCD = Math.max(0, player.dashCD - dt);
+        player.dashTime = Math.max(0, player.dashTime - dt);
+        player.invuln = Math.max(0, player.invuln - dt);
+
+        // rampage state resolved BEFORE collision/bounds so player.r is correct for this frame's physics
+        // (a stale radius from last frame caused clipping/sticking right as rampage started or ended)
+        if (!player.rampageActive && player.rampage >= player.rampageMax) {
+          player.rampageActive = true;
+          player.rampageTime = 6;
+          player.scale = 3;
+          sfxRampage();
+          setRumble(true);
+          flashAlpha = 0.6;
+          shake(10, 0.4);
+        }
+        if (player.rampageActive) {
+          player.rampageTime -= dt;
+          player.rampage = Math.max(
+            0,
+            player.rampage - dt * (player.rampageMax / 6),
+          );
+          if (player.rampageTime <= 0) {
+            player.rampageActive = false;
+            player.scale = 1;
+            setRumble(false);
+          }
+        }
+        player.r = player.baseR * (player.rampageActive ? player.scale : 1);
+
+        // SOFT-LOCK FIX: wall/bounds collision uses a capped effective radius so growth or rampage
+        // scale can never permanently trap the player in maze geometry. True radius (rendering, pellet
+        // pickup, ghost collision) is restored right after — unchanged everywhere else.
+        const realPlayerR = player.r;
+        player.r = Math.min(realPlayerR, TILE * 0.45);
+
+        // world bounds
+        player.x = Math.max(
+          TILE + player.r,
+          Math.min(COLS * TILE - TILE - player.r, player.x),
+        );
+        player.y = Math.max(
+          TILE + player.r,
+          Math.min(ROWS * TILE - TILE - player.r, player.y),
+        );
+
+        // tile collisions + destruction
+        const speedMag = Math.hypot(player.vx, player.vy);
+        const momentum = player.mass * speedMag; // p = m·v — real momentum, drives destruction now (was raw KE)
+        const ke = 0.5 * player.mass * speedMag * speedMag; // kept for audio/shake feedback scaling only
+        for (const { gx, gy } of nearbyTiles(
+          player.x,
+          player.y,
+          player.r + 4,
+        )) {
+          const t = grid[gy][gx];
+          if (t === -1) {
+            const res = resolveCircleTile(player, gx, gy);
+            if (res) shake(2, 0.1);
+            continue;
+          }
+          if (!t) continue;
+          if (player.rampageActive) {
+            destroyTile(gx, gy);
+            shake(4, 0.15);
+            continue;
+          }
+          // Momentum-gated (p = m·v), not raw speed²: casual movement must NOT break walls, or the maze
+          // stops being an obstacle. Soft needs a near-top-speed sprint; hard/concrete need a dash burst
+          // or built-up mass. Same qualitative gating as before, now physically real momentum.
+          const threshold = 300 + (t.max - 1) * 140;
+          if (momentum > threshold) {
+            t.hp -= 1;
+            const cx = gx * TILE + TILE / 2,
+              cy = gy * TILE + TILE / 2;
+            spawnDebris(
+              cx,
+              cy,
+              MATS[t.type].color,
+              4,
+              Math.min(momentum / threshold, 3),
+            );
+            sfxHit(ke / 20);
+            shake(3, 0.12);
+            const res = resolveCircleTile(player, gx, gy);
+            if (t.hp <= 0)
+              destroyTile(gx, gy, Math.min(momentum / threshold, 3));
+          } else {
+            resolveCircleTile(player, gx, gy);
+          }
+        }
+
+        // pellets
+        player.r = realPlayerR; // restore true radius — pellets, ghost collision, rendering unaffected
+        for (let i = pellets.length - 1; i >= 0; i--) {
+          const p = pellets[i];
+          const d = Math.hypot(p.x - player.x, p.y - player.y);
+          if (d < player.r + p.r) {
+            pellets.splice(i, 1);
+            sfxPellet();
+            spawnBurst(p.x, p.y, p.power ? "#ff0" : "#0ff", 10);
+            if (p.power) {
+              player.rampage = Math.min(player.rampageMax, player.rampage + 22);
+              addScore(50);
+              sfxPower();
+            } else {
+              player.mass += 0.03;
+              player.baseR = computeBaseR(player.mass);
+              addScore(10);
+            }
+            bumpCombo();
+          }
+        }
+        if (pellets.length === 0) {
+          nextLevel();
+          return;
+        }
+
+        // combo decay
+        player.comboTimer -= dt;
+        if (player.comboTimer <= 0 && player.combo > 1) {
+          player.combo = Math.max(1, player.combo - dt * 0.5);
+          comboEl.textContent = "x" + player.combo.toFixed(1);
+        }
+
+        meterFill.style.width =
+          (player.rampage / player.rampageMax) * 100 + "%";
+        massEl.textContent = player.mass.toFixed(1);
+
+        // ghosts AI + physics
+        for (const g of ghosts) {
+          if (g.stunned > 0) {
+            g.stunned -= dt;
+            g.vx *= 0.9;
+            g.vy *= 0.9;
+          } else {
+            let tx = player.x,
+              ty = player.y;
+            if (g.type === "pinky") {
+              tx = player.x + player.vx * 0.6;
+              ty = player.y + player.vy * 0.6;
+            } else if (g.type === "inky") {
+              // BUGFIX: was targeting midpoint(player, own FIXED spawn point) — spawn never updates,
+              // so Inky visibly retreated toward its spawn corner as the player moved away from it.
+              // Classic Inky uses Blinky's live position; fall back to spawn only if Blinky is gone.
+              const blinky = ghosts.find((o) => o.type === "blinky");
+              const bx = blinky ? blinky.x : g.tetherX,
+                by = blinky ? blinky.y : g.tetherY;
+              tx = (player.x + bx) / 2;
+              ty = (player.y + by) / 2;
+            } else if (g.type === "clyde") {
+              g.mineCD -= dt;
+              // BUGFIX: removed the close-range "flee" reversal — it wasn't in spec and made Clyde
+              // visibly run away from the player any time it got within 160px. Clyde now always
+              // chases (default tx/ty=player.x/y); the mine-drop mechanic below is unchanged.
+              if (g.mineCD <= 0) {
+                g.mineCD = 3 + Math.random() * 2;
+                spawnBurst(g.x, g.y, "#ffb347", 14);
+                sfxMine();
+                const dd = Math.hypot(player.x - g.x, player.y - g.y);
+                if (dd < TILE * 3) {
+                  const f = (1 - dd / (TILE * 3)) * 300;
+                  const nx = (player.x - g.x) / (dd || 1),
+                    ny = (player.y - g.y) / (dd || 1);
+                  player.vx += nx * f;
+                  player.vy += ny * f;
+                  shake(5, 0.2);
+                }
+              }
+            }
+            // alerted (from a nearby wall break) ghosts hunt harder for a short window — the real
+            // consequence of bashing bricks: you trade a wall for a faster, more focused chaser
+            const dx = tx - g.x,
+              dy = ty - g.y,
+              d = Math.hypot(dx, dy) || 1;
+            const alertMul = g.alertTimer > 0 ? 1.8 : 1;
+            g.vx += (dx / d) * g.speed * 2.2 * alertMul * dt;
+            g.vy += (dy / d) * g.speed * 2.2 * alertMul * dt;
+          }
+          if (g.alertTimer > 0) g.alertTimer = Math.max(0, g.alertTimer - dt);
+          const gfr = Math.exp(-3 * dt);
+          g.vx *= gfr;
+          g.vy *= gfr;
+          const gCap = g.speed * (g.alertTimer > 0 ? 1.5 : 1);
+          const gs = Math.hypot(g.vx, g.vy);
+          if (gs > gCap) {
+            g.vx = (g.vx / gs) * gCap;
+            g.vy = (g.vy / gs) * gCap;
+          }
+          g.x += g.vx * dt;
+          g.y += g.vy * dt;
+          g.x = Math.max(TILE + g.r, Math.min(COLS * TILE - TILE - g.r, g.x));
+          g.y = Math.max(TILE + g.r, Math.min(ROWS * TILE - TILE - g.r, g.y));
+          for (const { gx, gy } of nearbyTiles(g.x, g.y, g.r + 2)) {
+            const t = grid[gy][gx];
+            if (t === -1) resolveCircleTile(g, gx, gy);
+            else if (t && player.rampageActive) {
+              /* let rampage destroy near ghost too via player pass */
+            }
+          }
+          // player-ghost collision + NEAR MISS: skirting close past a ghost without touching it is the
+          // real skill-reward loop — it feeds score/combo/rampage meter far better than brick-bashing does
+          const dpx = g.x - player.x,
+            dpy = g.y - player.y,
+            dpd = Math.hypot(dpx, dpy);
+          if (g.nearMissCD > 0) g.nearMissCD = Math.max(0, g.nearMissCD - dt);
+          if (
+            !player.rampageActive &&
+            g.nearMissCD <= 0 &&
+            dpd < g.r + player.r + 16 &&
+            dpd >= g.r + player.r &&
+            spd > 140
+          ) {
+            g.nearMissCD = 1.2;
+            player.rampage = Math.min(player.rampageMax, player.rampage + 6);
+            addScore(80);
+            bumpCombo();
+            bumpCombo();
+            sfxNearMiss();
+            spawnBurst(player.x, player.y, "#0ff", 8);
+          }
+          if (dpd < g.r + player.r) {
+            if (player.rampageActive) {
+              g.stunned = 1.5;
+              const nx = dpx / (dpd || 1),
+                ny = dpy / (dpd || 1);
+              g.vx = nx * 500;
+              g.vy = ny * 500;
+              spawnBurst(g.x, g.y, g.color, 16);
+              addScore(200);
+              bumpCombo();
+              sfxDestroy();
+              shake(8, 0.25);
+            } else if (player.invuln <= 0) {
+              player.lives--;
+              livesEl.textContent = player.lives;
+              player.invuln = 2;
+              sfxDeath();
+              shake(12, 0.4);
+              flashAlpha = 0.5;
+              player.x = spawnPoint.cx * TILE + TILE / 2;
+              player.y = spawnPoint.cy * TILE + TILE / 2;
+              player.vx = 0;
+              player.vy = 0;
+              if (player.lives <= 0) {
+                gameOver();
+                return;
+              }
+            }
+          }
+        }
+
+        // GHOST-GHOST REPULSION (physics overlay only, no AI change): prevents ghosts stacking/
+        // overlapping indefinitely when multiple converge on the player from the same side.
+        for (let i = 0; i < ghosts.length; i++)
+          for (let j = i + 1; j < ghosts.length; j++) {
+            const a = ghosts[i],
+              b = ghosts[j];
+            const ddx = b.x - a.x,
+              ddy = b.y - a.y,
+              dd = Math.hypot(ddx, ddy);
+            const minD = a.r + b.r;
+            if (dd > 0.001 && dd < minD) {
+              const nx = ddx / dd,
+                ny = ddy / dd,
+                push = (minD - dd) * 0.5;
+              a.x -= nx * push;
+              a.y -= ny * push;
+              b.x += nx * push;
+              b.y += ny * push;
+              const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+              if (rel < 0) {
+                a.vx += nx * rel * 0.5;
+                a.vy += ny * rel * 0.5;
+                b.vx -= nx * rel * 0.5;
+                b.vy -= ny * rel * 0.5;
+              }
+            }
+          }
+
+        // regrow bashed tiles over time so a carved tunnel isn't a permanent safe lane
+        for (let i = regrowQueue.length - 1; i >= 0; i--) {
+          const q = regrowQueue[i];
+          q.timer -= dt;
+          if (q.timer <= 0) {
+            if (grid[q.gy] && grid[q.gy][q.gx] === null) {
+              const dpp = Math.hypot(
+                q.gx * TILE + TILE / 2 - player.x,
+                q.gy * TILE + TILE / 2 - player.y,
+              );
+              if (dpp > TILE * 2.5) {
+                grid[q.gy][q.gx] = {
+                  hp: MATS[q.type].hp,
+                  max: MATS[q.type].hp,
+                  type: q.type,
+                };
+                spawnBurst(
+                  q.gx * TILE + TILE / 2,
+                  q.gy * TILE + TILE / 2,
+                  MATS[q.type].color,
+                  6,
+                );
+              }
+            }
+            regrowQueue.splice(i, 1);
+          }
+        }
+
+        // debris / particles
+        debrisPool.update(dt, (o, dt) => {
+          o.life += dt;
+          o.x += o.vx * dt;
+          o.y += o.vy * dt;
+          o.vx *= 0.94;
+          o.vy *= 0.94;
+          // DEBRIS-VS-GHOST impulse (minimal addition, existing pool untouched otherwise): flying
+          // debris now physically pushes ghosts it hits, scaled by the debris' own momentum.
+          if (o.alive) {
+            for (const g of ghosts) {
+              const ddx = o.x - g.x,
+                ddy = o.y - g.y,
+                dd = Math.hypot(ddx, ddy);
+              if (dd < (o.r || 2) + g.r && dd > 0.001) {
+                const nx = ddx / dd,
+                  ny = ddy / dd;
+                const debrisMomentum = Math.hypot(o.vx, o.vy) * 0.15;
+                g.vx -= nx * debrisMomentum * 0.1;
+                g.vy -= ny * debrisMomentum * 0.1;
+                o.vx *= 0.3;
+                o.vy *= 0.3; // debris loses most of its energy on impact
+              }
+            }
+          }
+          if (o.life >= o.maxLife) o.alive = false;
+        });
+        particlePool.update(dt, (o, dt) => {
+          o.life += dt;
+          o.x += o.vx * dt;
+          o.y += o.vy * dt;
+          o.vx *= 0.9;
+          o.vy *= 0.9;
+          if (o.life >= o.maxLife) o.alive = false;
+        });
+
+        // camera
+        const targetZoom = Math.max(
+          0.65,
+          1.1 -
+            spd / 900 -
+            player.mass * 0.01 -
+            (player.rampageActive ? 0.25 : 0),
+        );
+        cam.zoom += (targetZoom - cam.zoom) * Math.min(1, dt * 3);
+        cam.x += (player.x - cam.x) * Math.min(1, dt * 4);
+        cam.y += (player.y - cam.y) * Math.min(1, dt * 4);
+
+        shakeTime = Math.max(0, shakeTime - dt);
+        if (shakeTime <= 0) shakeMag *= 0.9;
+        flashAlpha = Math.max(0, flashAlpha - dt * 1.2);
+      }
+
+      function gameOver() {
+        state = "gameover";
+        sfxGameOver();
+        setRumble(false);
+        resetTouchStick();
+        document.getElementById("pauseBtn").style.display = "none";
+        if (isTouch) {
+          joy.style.display = "none";
+          dashBtn.style.display = "none";
+        }
+        const blurb = document.getElementById("titleBlurb");
+        blurb.textContent = "GAME OVER — Score: " + player.score;
+        setTimeout(() => {
+          document.getElementById("title").classList.remove("hidden");
+          state = "title";
+          setTimeout(() => {
+            if (state === "title") blurb.textContent = TITLE_BLURB;
+          }, 2800);
+        }, 800);
+      }
+
+      /* ============ RENDER ============ */
+      function render() {
+        if (!grid) return;
+        ctx.clearRect(0, 0, W, H);
+        ctx.save();
+        let sx = 0,
+          sy = 0;
+        if (shakeMag > 0.1) {
+          sx = (Math.random() - 0.5) * shakeMag;
+          sy = (Math.random() - 0.5) * shakeMag;
+        }
+        ctx.translate(W / 2 + sx, H / 2 + sy);
+        ctx.scale(cam.zoom, cam.zoom);
+        ctx.translate(-cam.x, -cam.y);
+
+        // background grid glow
+        ctx.fillStyle = "#05060a";
+        ctx.fillRect(cam.x - W, cam.y - H, W * 2, H * 2);
+
+        // maze — only draw tiles inside the camera's visible area (perf-critical on large desktop
+        // monitors where COLS/ROWS is bigger, and on low-end phones where every draw call costs more)
+        const viewHalfW = W / 2 / cam.zoom + TILE,
+          viewHalfH = H / 2 / cam.zoom + TILE;
+        const xStart = Math.max(0, Math.floor((cam.x - viewHalfW) / TILE)),
+          xEnd = Math.min(COLS - 1, Math.ceil((cam.x + viewHalfW) / TILE));
+        const yStart = Math.max(0, Math.floor((cam.y - viewHalfH) / TILE)),
+          yEnd = Math.min(ROWS - 1, Math.ceil((cam.y + viewHalfH) / TILE));
+        for (let y = yStart; y <= yEnd; y++)
+          for (let x = xStart; x <= xEnd; x++) {
+            const t = grid[y][x];
+            if (t === -1) {
+              ctx.fillStyle = "#111827";
+              ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+            } else if (t) {
+              const c = MATS[t.type].color;
+              const pct = t.hp / t.max;
+              ctx.fillStyle = c;
+              ctx.globalAlpha = 0.5 + 0.5 * pct;
+              ctx.fillRect(x * TILE + 1, y * TILE + 1, TILE - 2, TILE - 2);
+              ctx.globalAlpha = 1;
+              ctx.strokeStyle = "rgba(0,255,255,0.15)";
+              ctx.strokeRect(x * TILE + 1, y * TILE + 1, TILE - 2, TILE - 2);
+            }
+          }
+
+        // pellets
+        for (const p of pellets) {
+          if (
+            p.x < cam.x - viewHalfW ||
+            p.x > cam.x + viewHalfW ||
+            p.y < cam.y - viewHalfH ||
+            p.y > cam.y + viewHalfH
+          )
+            continue;
+          ctx.beginPath();
+          ctx.fillStyle = p.power ? "#ffee00" : "#66eaff";
+          ctx.shadowColor = ctx.fillStyle;
+          ctx.shadowBlur = p.power ? 14 : 6;
+          ctx.arc(p.x, p.y, p.power ? 7 : 3.5, 0, 7);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+
+        // debris
+        debrisPool.draw((o) => {
+          ctx.globalAlpha = Math.max(0, 1 - o.life / o.maxLife);
+          ctx.fillStyle = o.color;
+          ctx.fillRect(o.x - o.size / 2, o.y - o.size / 2, o.size, o.size);
+        });
+        particlePool.draw((o) => {
+          ctx.globalAlpha = Math.max(0, 1 - o.life / o.maxLife);
+          ctx.fillStyle = o.color;
+          ctx.shadowColor = o.color;
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(o.x, o.y, o.size, 0, 7);
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+
+        // ghosts
+        for (const g of ghosts) {
+          ctx.save();
+          ctx.translate(g.x, g.y);
+          ctx.fillStyle = g.stunned > 0 ? "#555" : g.color;
+          ctx.shadowColor = g.color;
+          ctx.shadowBlur = g.stunned > 0 ? 0 : 12;
+          ctx.beginPath();
+          ctx.arc(0, -2, g.r, Math.PI, 0);
+          ctx.lineTo(g.r, g.r * 0.7);
+          for (let i = 0; i < 4; i++) {
+            ctx.lineTo(
+              g.r - (i + 1) * (g.r / 2),
+              i % 2 === 0 ? g.r * 0.4 : g.r * 0.7,
+            );
+          }
+          ctx.lineTo(-g.r, g.r * 0.7);
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = "#fff";
+          ctx.beginPath();
+          ctx.arc(-4, -3, 3, 0, 7);
+          ctx.arc(4, -3, 3, 0, 7);
+          ctx.fill();
+          ctx.fillStyle = "#003";
+          ctx.beginPath();
+          ctx.arc(-4, -3, 1.4, 0, 7);
+          ctx.arc(4, -3, 1.4, 0, 7);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // player (rotates to face movement direction, animated chomp)
+        ctx.save();
+        ctx.translate(player.x, player.y);
+        ctx.rotate(player.angle);
+        if (player.invuln > 0 && Math.floor(player.invuln * 10) % 2 === 0)
+          ctx.globalAlpha = 0.4;
+        const glow = player.rampageActive ? "#fff200" : "#0ff";
+        ctx.shadowColor = glow;
+        ctx.shadowBlur = player.rampageActive ? 30 : 14;
+        ctx.fillStyle = player.rampageActive ? "#ffee00" : "#00e5ff";
+        const mouthOpen =
+          (Math.sin(player.mouthPhase) * 0.5 + 0.5) * 0.32 + 0.06; // 0.06..0.38 of PI
+        ctx.beginPath();
+        ctx.arc(0, 0, player.r, mouthOpen * Math.PI, (2 - mouthOpen) * Math.PI);
+        ctx.lineTo(0, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+
+        ctx.restore();
+
+        if (flashAlpha > 0) {
+          ctx.fillStyle = `rgba(255,240,0,${flashAlpha * 0.3})`;
+          ctx.fillRect(0, 0, W, H);
+        }
+      }
+
+      /* ============ LOOP ============ */
+      function loop(now) {
+        rafId = requestAnimationFrame(loop);
+        if (!lastT) lastT = now;
+        const dt = Math.min(Math.max(0, (now - lastT) / 1000), 0.05);
+        lastT = now;
+        if (state === "playing") update(dt);
+        if (state === "playing" || state === "paused") render();
+      }
+    </script>
+  </body>
+</html>
